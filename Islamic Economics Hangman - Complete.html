@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Economics Hangman</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: #4caf50;
+            margin-bottom: 20px;
+            text-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .hangman-drawing {
+            width: 200px;
+            height: 250px;
+            margin: 20px 0;
+            position: relative;
+        }
+        .word-display {
+            margin: 20px 0;
+            font-size: 2rem;
+            letter-spacing: 8px;
+            color: #ffffff;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .key {
+            margin: 5px;
+            width: 40px;
+            height: 40px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .key:hover {
+            background-color: #2e7d32;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+        .key.used {
+            background-color: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+        .message {
+            margin: 20px 0;
+            font-weight: bold;
+            min-height: 24px;
+            color: #ffffff;
+        }
+        .explanation {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            text-align: left;
+            display: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            border-left: 4px solid #4caf50;
+        }
+        .score {
+            margin: 10px 0;
+            font-size: 1.2rem;
+            color: #ffc107;
+            text-shadow: 0 0 5px rgba(255, 193, 7, 0.3);
+        }
+        .new-game {
+            margin: 20px 0;
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .new-game:hover {
+            background-color: #2e7d32;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+        .hangman-part {
+            position: absolute;
+            background-color: #e0e0e0;
+        }
+        #gallows-base {
+            width: 100px;
+            height: 5px;
+            bottom: 0;
+            left: 50px;
+        }
+        #gallows-post {
+            width: 5px;
+            height: 200px;
+            bottom: 0;
+            left: 60px;
+        }
+        #gallows-beam {
+            width: 80px;
+            height: 5px;
+            top: 0;
+            left: 60px;
+        }
+        #gallows-rope {
+            width: 5px;
+            height: 30px;
+            top: 0;
+            right: 60px;
+        }
+        #head {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: transparent;
+            border: 5px solid #e0e0e0;
+            top: 30px;
+            right: 47px;
+            display: none;
+        }
+        #body {
+            width: 5px;
+            height: 60px;
+            top: 65px;
+            right: 60px;
+            display: none;
+        }
+        #left-arm {
+            width: 40px;
+            height: 5px;
+            top: 80px;
+            right: 60px;
+            transform: rotate(30deg);
+            display: none;
+        }
+        #right-arm {
+            width: 40px;
+            height: 5px;
+            top: 80px;
+            right: 25px;
+            transform: rotate(-30deg);
+            display: none;
+        }
+        #left-leg {
+            width: 40px;
+            height: 5px;
+            top: 130px;
+            right: 60px;
+            transform: rotate(-30deg);
+            display: none;
+        }
+        #right-leg {
+            width: 40px;
+            height: 5px;
+            top: 130px;
+            right: 25px;
+            transform: rotate(30deg);
+            display: none;
+        }
+        .keyboard-info {
+            margin: 10px 0;
+            font-style: italic;
+            color: #aaa;
+        }
+        .term-title {
+            font-weight: bold;
+            color: #4caf50;
+            margin-bottom: 5px;
+            font-size: 1.2rem;
+        }
+        .category-selector {
+            margin: 15px 0;
+        }
+        .category-btn {
+            margin: 0 5px;
+            padding: 8px 15px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .category-btn:hover {
+            background-color: #2e7d32;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+        .category-btn.active {
+            background-color: #2e7d32;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+        .category-label {
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #e0e0e0;
+        }
+        .feedback-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            display: none;
+        }
+        .feedback-image {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .attempts-left {
+            margin: 10px 0;
+            color: #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Economics Hangman</h1>
+        <div class="score">Score: <span id="score">0</span></div>
+        
+        <div class="category-selector">
+            <div class="category-label">Select Category:</div>
+            <button class="category-btn active" id="islamic-btn">Islamic Economics</button>
+            <button class="category-btn" id="general-btn">General Economics</button>
+            <button class="category-btn" id="mixed-btn">Mixed</button>
+        </div>
+        
+        <div class="game-area">
+            <div class="hangman-drawing">
+                <div class="hangman-part" id="gallows-base"></div>
+                <div class="hangman-part" id="gallows-post"></div>
+                <div class="hangman-part" id="gallows-beam"></div>
+                <div class="hangman-part" id="gallows-rope"></div>
+                <div class="hangman-part" id="head"></div>
+                <div class="hangman-part" id="body"></div>
+                <div class="hangman-part" id="left-arm"></div>
+                <div class="hangman-part" id="right-arm"></div>
+                <div class="hangman-part" id="left-leg"></div>
+                <div class="hangman-part" id="right-leg"></div>
+            </div>
+            
+            <div class="attempts-left">Attempts left: <span id="attempts-left">6</span></div>
+            
+            <div class="word-display" id="word-display"></div>
+            
+            <div class="message" id="message"></div>
+            
+            <div class="explanation" id="explanation">
+                <div class="term-title" id="term-title"></div>
+                <div id="term-explanation"></div>
+            </div>
+            
+            <div class="keyboard-info">You can use your physical keyboard or click the buttons below</div>
+            
+            <div class="keyboard" id="keyboard"></div>
+            
+            <button class="new-game" id="new-game">New Game</button>
+        </div>
+    </div>
+    
+    <div class="feedback-container" id="feedback-container">
+        <img id="feedback-image" class="feedback-image" src="" alt="Feedback">
+    </div>
+
+    <script>
+        // Islamic Economics terms with explanations
+        const islamicTerms = [
+            { 
+                word: "ZAKAT", 
+                explanation: "Zakat is one of the five pillars of Islam and refers to the obligatory giving of a set proportion of one's wealth to charity. It's considered a way of purifying one's wealth and soul. In Islamic economics, it serves as a mechanism for wealth redistribution and social welfare."
+            },
+            { 
+                word: "RIBA", 
+                explanation: "Riba refers to interest charged on loans or deposits, which is strictly prohibited in Islamic finance. The prohibition is based on the principle that money itself has no intrinsic value and should not generate more money without effort or risk-sharing. Islamic finance offers alternative profit-sharing arrangements instead."
+            },
+            { 
+                word: "SUKUK", 
+                explanation: "Sukuk are Islamic financial certificates similar to conventional bonds but structured to comply with Islamic law. Unlike conventional bonds that represent debt obligations, sukuk represent partial ownership in an asset, allowing investors to receive profits from the asset rather than interest."
+            },
+            { 
+                word: "WAQF", 
+                explanation: "Waqf is an endowment of property for charitable purposes, where the property is held in trust and its profits are used for the welfare of society. It's a perpetual donation that cannot be sold or transferred. Historically, waqf institutions have funded hospitals, schools, and public infrastructure."
+            },
+            { 
+                word: "MUDARABAH", 
+                explanation: "Mudarabah is a profit-sharing partnership where one party provides capital (rab al-mal) and the other provides expertise and management (mudarib). Profits are shared according to a pre-agreed ratio, while financial losses are borne by the capital provider only, unless caused by negligence."
+            },
+            { 
+                word: "MUSHARAKAH", 
+                explanation: "Musharakah is a joint venture partnership where all partners contribute capital and share in both profits and losses. It embodies the Islamic principle of risk-sharing and is used for business financing, real estate development, and other investment activities."
+            },
+            { 
+                word: "TAKAFUL", 
+                explanation: "Takaful is the Islamic alternative to conventional insurance, based on the concept of mutual cooperation and shared responsibility. Participants contribute to a pool of funds that is used to help members in need, with any surplus distributed among participants or donated to charity."
+            },
+            { 
+                word: "GHARAR", 
+                explanation: "Gharar refers to excessive uncertainty or ambiguity in contracts, which is prohibited in Islamic finance. Transactions must have clear terms regarding the subject matter, price, and delivery to be valid. This principle aims to prevent exploitation and disputes between parties."
+            },
+            { 
+                word: "HALAL", 
+                explanation: "Halal means 'permissible' in Arabic and refers to activities, investments, and businesses that comply with Islamic principles. In Islamic finance, halal investments exclude industries involving alcohol, gambling, pork products, conventional financial services, weapons, and adult entertainment."
+            },
+            { 
+                word: "HARAM", 
+                explanation: "Haram means 'forbidden' in Arabic and refers to activities prohibited in Islam. In Islamic economics, haram activities include dealing with interest (riba), excessive uncertainty (gharar), gambling (maysir), and investing in prohibited industries like alcohol or pornography."
+            },
+            { 
+                word: "IJARA", 
+                explanation: "Ijara is an Islamic leasing arrangement where the bank purchases an asset and leases it to the customer for a fixed period. The customer pays regular rental fees, and ownership may transfer at the end of the lease period. It's commonly used for home and vehicle financing."
+            },
+            { 
+                word: "ISTISNA", 
+                explanation: "Istisna is a contract for manufacturing goods, where payment can be made in advance or in installments as the manufacturing progresses. It's particularly useful for financing construction and infrastructure projects where the asset doesn't exist at the time of contract."
+            },
+            { 
+                word: "SADAQAH", 
+                explanation: "Sadaqah refers to voluntary charity given out of compassion, love, or generosity. Unlike Zakat, it's not obligatory and can be given to anyone in any amount. In Islamic economics, it complements formal welfare systems and promotes social solidarity."
+            },
+            { 
+                word: "FALAH", 
+                explanation: "Falah refers to success, happiness, and well-being in this world and the hereafter. In Islamic economics, it represents the ultimate goal - a balanced approach to economic development that considers spiritual, moral, and material well-being, not just profit maximization."
+            },
+            { 
+                word: "BAITUL MAL", 
+                explanation: "Baitul Mal is the public treasury in Islamic governance, responsible for collecting and distributing funds for social welfare. Historically, it managed revenues from zakat, taxes, and other sources, funding public services, infrastructure, and assistance to the needy."
+            }
+        ];
+
+        // General Economics terms with explanations
+        const generalTerms = [
+            {
+                word: "INFLATION",
+                explanation: "Inflation is the rate at which the general level of prices for goods and services rises, causing purchasing power to fall. Central banks attempt to control inflation through monetary policy to maintain economic stability and protect the value of currency."
+            },
+            {
+                word: "RECESSION",
+                explanation: "A recession is a significant decline in economic activity that lasts for months or even years. It is generally identified by a fall in GDP for two consecutive quarters, along with rising unemployment, falling retail sales, and contracting income and manufacturing."
+            },
+            {
+                word: "MONOPOLY",
+                explanation: "A monopoly exists when a specific person or enterprise is the only supplier of a particular good or service. This can lead to higher prices and inferior products compared to competitive markets, which is why many countries have anti-monopoly laws."
+            },
+            {
+                word: "SUPPLY",
+                explanation: "Supply represents the quantity of a good or service that producers are willing and able to offer for sale at various prices during a given period. The law of supply states that, all else being equal, as the price of a good increases, the quantity supplied also increases."
+            },
+            {
+                word: "DEMAND",
+                explanation: "Demand refers to the quantity of a good or service that consumers are willing and able to purchase at various prices during a given period. The law of demand states that, all else being equal, as the price of a good increases, the quantity demanded decreases."
+            },
+            {
+                word: "GDP",
+                explanation: "Gross Domestic Product (GDP) is the total monetary or market value of all finished goods and services produced within a country's borders in a specific time period. It serves as a comprehensive measure of a nation's overall economic activity."
+            },
+            {
+                word: "FISCAL",
+                explanation: "Fiscal policy refers to the use of government spending and taxation to influence the economy. Governments typically use fiscal policy to promote strong and sustainable growth and reduce poverty. The two main instruments are government expenditure and taxation."
+            },
+            {
+                word: "MONETARY",
+                explanation: "Monetary policy involves the management of money supply and interest rates by a central bank to achieve macroeconomic objectives like controlling inflation, reducing unemployment, and promoting economic growth."
+            },
+            {
+                word: "ELASTICITY",
+                explanation: "Elasticity measures the responsiveness of one economic variable to changes in another. For example, price elasticity of demand shows how much the quantity demanded of a good changes when its price changes. It helps businesses make pricing decisions."
+            },
+            {
+                word: "EXTERNALITY",
+                explanation: "An externality is a cost or benefit that affects a third party who did not choose to incur that cost or benefit. Negative externalities (like pollution) impose costs on others, while positive externalities (like education) provide benefits to others."
+            },
+            {
+                word: "CAPITAL",
+                explanation: "Capital refers to the assets that increase one's ability to generate value. It can include physical capital (machinery, buildings), human capital (education, skills), financial capital (money, investments), and social capital (relationships, networks)."
+            },
+            {
+                word: "DEFICIT",
+                explanation: "A deficit occurs when expenses exceed revenues, imports exceed exports, or liabilities exceed assets. Government budget deficits, where spending exceeds tax revenues, can stimulate the economy but may lead to increased national debt."
+            },
+            {
+                word: "TARIFF",
+                explanation: "A tariff is a tax imposed by a government on imported goods and services, designed to make foreign products more expensive and less attractive to domestic consumers, thereby protecting local industries from foreign competition."
+            },
+            {
+                word: "SUBSIDY",
+                explanation: "A subsidy is a financial aid or support provided by the government to an individual, business, or institution to promote a public objective. Subsidies can help reduce prices for consumers, increase producer profits, or encourage certain activities."
+            },
+            {
+                word: "GLOBALIZATION",
+                explanation: "Globalization refers to the increasing interdependence of economies around the world, particularly through cross-border trade, investment, and technology flows. It has led to greater international competition, specialization, and economic integration."
+            }
+        ];
+
+        // Success and failure feedback images
+        const successImages = [
+            "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiM0Y2FmNTAiLz48dGV4dCB4PSIxMDAiIHk9IjEwMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+R3JlYXQgSm9iITwvdGV4dD48L3N2Zz4=",
+            "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiM0Y2FmNTAiLz48dGV4dCB4PSIxMDAiIHk9IjEwMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+RXhjZWxsZW50ITwvdGV4dD48L3N2Zz4="
+        ];
+        
+        const failureImages = [
+            "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNmNDQzMzYiLz48dGV4dCB4PSIxMDAiIHk9IjEwMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+VHJ5IEFnYWluITwvdGV4dD48L3N2Zz4=",
+            "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNmNDQzMzYiLz48dGV4dCB4PSIxMDAiIHk9IjEwMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+S2VlcCBMZWFybmluZyE8L3RleHQ+PC9zdmc+"
+        ];
+
+        let currentWord = "";
+        let currentExplanation = "";
+        let guessedLetters = [];
+        let wrongGuesses = 0;
+        let score = 0;
+        let gameActive = true;
+        const maxWrongGuesses = 6;
+        let currentCategory = "islamic"; // Default category
+
+        // Set up category buttons
+        document.getElementById("islamic-btn").addEventListener("click", function() {
+            setCategory("islamic");
+            this.classList.add("active");
+            document.getElementById("general-btn").classList.remove("active");
+            document.getElementById("mixed-btn").classList.remove("active");
+        });
+
+        document.getElementById("general-btn").addEventListener("click", function() {
+            setCategory("general");
+            this.classList.add("active");
+            document.getElementById("islamic-btn").classList.remove("active");
+            document.getElementById("mixed-btn").classList.remove("active");
+        });
+
+        document.getElementById("mixed-btn").addEventListener("click", function() {
+            setCategory("mixed");
+            this.classList.add("active");
+            document.getElementById("islamic-btn").classList.remove("active");
+            document.getElementById("general-btn").classList.remove("active");
+        });
+
+        function setCategory(category) {
+            currentCategory = category;
+            initGame();
+        }
+
+        // Get a word based on the selected category
+        function getRandomWord() {
+            let wordPool = [];
+            
+            if (currentCategory === "islamic") {
+                wordPool = islamicTerms;
+            } else if (currentCategory === "general") {
+                wordPool = generalTerms;
+            } else if (currentCategory === "mixed") {
+                wordPool = [...islamicTerms, ...generalTerms];
+            }
+            
+            const randomIndex = Math.floor(Math.random() * wordPool.length);
+            return wordPool[randomIndex];
+        }
+
+        // Initialize the game
+        function initGame() {
+            // Reset variables
+            guessedLetters = [];
+            wrongGuesses = 0;
+            gameActive = true;
+            
+            // Select a random word based on category
+            const wordData = getRandomWord();
+            currentWord = wordData.word;
+            currentExplanation = wordData.explanation;
+            
+            // Reset the message
+            document.getElementById("message").textContent = "";
+            
+            // Hide the explanation
+            document.getElementById("explanation").style.display = "none";
+            
+            // Update the word display
+            updateWordDisplay();
+            
+            // Reset the hangman drawing
+            resetHangman();
+            
+            // Create the keyboard
+            createKeyboard();
+            
+            // Update attempts left
+            updateAttemptsLeft();
+        }
+
+        // Update the word display with underscores and guessed letters
+        function updateWordDisplay() {
+            const wordDisplay = document.getElementById("word-display");
+            wordDisplay.textContent = currentWord
+                .split("")
+                .map(letter => {
+                    // If it's a space, show it
+                    if (letter === " ") return " ";
+                    // Otherwise, show underscore or the guessed letter
+                    return guessedLetters.includes(letter) ? letter : "_";
+                })
+                .join(" ");
+        }
+
+        // Create the keyboard buttons
+        function createKeyboard() {
+            const keyboard = document.getElementById("keyboard");
+            keyboard.innerHTML = "";
+            
+            for (let i = 65; i <= 90; i++) {
+                const letter = String.fromCharCode(i);
+                const button = document.createElement("button");
+                button.textContent = letter;
+                button.className = "key";
+                button.id = `key-${letter}`;
+                button.addEventListener("click", () => handleGuess(letter));
+                keyboard.appendChild(button);
+            }
+        }
+
+        // Handle a letter guess
+        function handleGuess(letter) {
+            // If the game is not active or the letter has already been guessed, do nothing
+            if (!gameActive || guessedLetters.includes(letter)) {
+                return;
+            }
+            
+            // Add the letter to the guessed letters
+            guessedLetters.push(letter);
+            
+            // Disable the button
+            const button = document.getElementById(`key-${letter}`);
+            if (button) {
+                button.classList.add("used");
+            }
+            
+            // Check if the letter is in the word
+            if (currentWord.includes(letter)) {
+                // Update the word display
+                updateWordDisplay();
+                
+                // Check if the player has won
+                const currentDisplay = document.getElementById("word-display").textContent.replace(/\s/g, "");
+                if (!currentDisplay.includes("_")) {
+                    handleWin();
+                }
+            } else {
+                // Increment wrong guesses
+                wrongGuesses++;
+                
+                // Update the hangman drawing
+                updateHangman();
+                
+                // Update attempts left
+                updateAttemptsLeft();
+                
+                // Check if the player has lost
+                if (wrongGuesses >= maxWrongGuesses) {
+                    handleLoss();
+                }
+            }
+        }
+
+        // Update the hangman drawing based on wrong guesses
+        function updateHangman() {
+            const parts = ["head", "body", "left-arm", "right-arm", "left-leg", "right-leg"];
+            if (wrongGuesses <= parts.length) {
+                document.getElementById(parts[wrongGuesses - 1]).style.display = "block";
+            }
+        }
+
+        // Reset the hangman drawing
+        function resetHangman() {
+            const parts = ["head", "body", "left-arm", "right-arm", "left-leg", "right-leg"];
+            parts.forEach(part => {
+                document.getElementById(part).style.display = "none";
+            });
+        }
+
+        // Update attempts left display
+        function updateAttemptsLeft() {
+            document.getElementById("attempts-left").textContent = maxWrongGuesses - wrongGuesses;
+        }
+
+        // Show feedback image
+        function showFeedbackImage(isSuccess) {
+            const feedbackContainer = document.getElementById("feedback-container");
+            const feedbackImage = document.getElementById("feedback-image");
+            
+            // Choose a random image from the appropriate array
+            const images = isSuccess ? successImages : failureImages;
+            const randomIndex = Math.floor(Math.random() * images.length);
+            feedbackImage.src = images[randomIndex];
+            
+            // Display the feedback
+            feedbackContainer.style.display = "block";
+            
+            // Hide after 2 seconds
+            setTimeout(() => {
+                feedbackContainer.style.display = "none";
+            }, 2000);
+        }
+
+        // Handle a win
+        function handleWin() {
+            score += 10;
+            document.getElementById("score").textContent = score;
+            document.getElementById("message").textContent = "Congratulations! You won!";
+            showExplanation();
+            gameActive = false;
+            disableKeyboard();
+            showFeedbackImage(true);
+        }
+
+        // Handle a loss
+        function handleLoss() {
+            document.getElementById("message").textContent = `Game over! The word was "${currentWord}".`;
+            showExplanation();
+            gameActive = false;
+            disableKeyboard();
+            showFeedbackImage(false);
+        }
+
+        // Show the explanation of the term
+        function showExplanation() {
+            document.getElementById("term-title").textContent = currentWord;
+            document.getElementById("term-explanation").textContent = currentExplanation;
+            document.getElementById("explanation").style.display = "block";
+        }
+
+        // Disable the keyboard
+        function disableKeyboard() {
+            const keys = document.querySelectorAll(".key");
+            keys.forEach(key => {
+                key.classList.add("used");
+            });
+        }
+
+        // Handle physical keyboard input
+        document.addEventListener("keydown", (event) => {
+            // Check if the key pressed is a letter
+            const key = event.key.toUpperCase();
+            if (/^[A-Z]$/.test(key)) {
+                handleGuess(key);
+            }
+        });
+
+        // Initialize the game when the page loads
+        window.addEventListener("load", initGame);
+
+        // Add event listener for the new game button
+        document.getElementById("new-game").addEventListener("click", initGame);
+    </script>
+</body>
+</html>
